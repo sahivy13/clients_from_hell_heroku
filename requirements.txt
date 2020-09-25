@@ -1,0 +1,13 @@
+streamlit == 0.66.00
+matplotlib == 3.3.1
+plotly == 4.9.0
+pickle == 4.0
+Pillow == 7.2.0
+requests == 2.24.0
+beautifullsoup4 == 4.9.1
+regex == 2020.7.14
+pandas == 1.1.1
+numpy == 1.18.5
+scikit-learn == 0.23.2
+nltk == 3.5
+imbalanced-learn == 0.7.0
