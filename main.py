@@ -21,6 +21,9 @@ import pickle
 
 from PIL import Image
 
+import nltk
+nltk.download('stopwords')
+
 # Streamlit Cache
 # @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 
