@@ -5,7 +5,7 @@ pickle-mixin == 1.0.2
 pickleshare == 0.7.5
 Pillow == 7.2.0
 requests == 2.24.0
-beautifullsoup4 == 4.9.1
+bs4 == 4.9.1
 regex == 2020.7.14
 pandas == 1.1.1
 numpy == 1.18.5
