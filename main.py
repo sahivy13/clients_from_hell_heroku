@@ -204,7 +204,7 @@ def create_db_tables(df_models):
 
     insert_name = """
     INSERT INTO model_names(model_name) 
-        VALUE(name)
+        VALUES(name)
     WHERE NOT EXISTS (
         SELECT 1 FROM model_names WHERE model_name=name
     );
