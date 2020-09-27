@@ -1,0 +1,5 @@
+user "onpsmhcjnzdsiz"
+password "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0"
+host "ec2-3-216-92-193.compute-1.amazonaws.com",
+port "5432"
+database "dc1fq03u49u20u"
