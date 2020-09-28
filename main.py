@@ -204,7 +204,7 @@ def create_db_tables(df_models):
 
     insert_name = """
     INSERT INTO model_names (model_name) 
-    VALUES (name)
+    VALUES (%s)
     ON CONFLICT (model_name) DO NOTHING;
     """
 
