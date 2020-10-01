@@ -184,6 +184,7 @@ def best_model(df, k = 10, target = 'category'):
 
     return df_models
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def create_db_tables(df_models):
     # Hey future Sahivy, This is past Sahivy.
     # This function requires to add a way to create 
