@@ -134,56 +134,56 @@ streamlit_pipe_write_intro()
 
 if use_current_data == False:
 
-    try:
+    # try:
         
-        main_pipe(
-            final_df_pipe(
-                upload_pipe(
-                    CP.from_db('db_con.txt'),
-                    streamlit_pipe_write_before,
-                    hist_of_target_creator,
-                    CP.category_replacer,
-                ),
-                CP.over_under_sampling,
-                streamlit_pipe_write_after,hist_of_target_creator,
-                CP.convert_to_tfidf,
-                RM.best_model,
-                show_df
+    main_pipe(
+        final_df_pipe(
+            upload_pipe(
+                CP.from_db('db_con.txt'),
+                streamlit_pipe_write_before,
+                hist_of_target_creator,
+                CP.category_replacer,
             ),
-            RM.create_db_tables,
-            # df_to_dict,
-            RM.save_all_or_one
-        )
+            CP.over_under_sampling,
+            streamlit_pipe_write_after,hist_of_target_creator,
+            CP.convert_to_tfidf,
+            RM.best_model,
+            show_df
+        ),
+        RM.create_db_tables,
+        # df_to_dict,
+        RM.save_all_or_one
+    )
 
-    except:
+    # except:
 
-        st.sidebar.write('There was no data in saved in database, thus scrapping website now!')
+    #     st.sidebar.write('There was no data in saved in database, thus scrapping website now!')
 
-        main_pipe(
-            final_df_pipe(
-                scrappe_pipe(
-                    "https://clientsfromhell.net/",
-                    S.get_categories,
-                    S.url_categroy_creator,
-                    S.page_num_creator,
-                    S.initialize_scraping,
-                    CP.df_creator,
-                    CP.cleaning,
-                    streamlit_pipe_write_before,
-                    hist_of_target_creator, 
-                    CP.data_to_db,
-                    CP.category_replacer
-                    ),
-                CP.over_under_sampling,
-                streamlit_pipe_write_after,hist_of_target_creator,
-                CP.convert_to_tfidf,
-                RM.best_model,
-                show_df
-            ),
-            RM.create_db_tables,
-            # df_to_dict,
-            RM.save_all_or_one
-        )
+    #     main_pipe(
+    #         final_df_pipe(
+    #             scrappe_pipe(
+    #                 "https://clientsfromhell.net/",
+    #                 S.get_categories,
+    #                 S.url_categroy_creator,
+    #                 S.page_num_creator,
+    #                 S.initialize_scraping,
+    #                 CP.df_creator,
+    #                 CP.cleaning,
+    #                 streamlit_pipe_write_before,
+    #                 hist_of_target_creator, 
+    #                 CP.data_to_db,
+    #                 CP.category_replacer
+    #                 ),
+    #             CP.over_under_sampling,
+    #             streamlit_pipe_write_after,hist_of_target_creator,
+    #             CP.convert_to_tfidf,
+    #             RM.best_model,
+    #             show_df
+    #         ),
+    #         RM.create_db_tables,
+    #         # df_to_dict,
+    #         RM.save_all_or_one
+    #     )
 
 else:
     
