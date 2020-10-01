@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import regex as re
+
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 from collections import Counter
@@ -8,12 +9,18 @@ import string
 from sklearn.feature_extraction.text import TfidfVectorizer
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
-import pickle
-import streamlit as st
-import os
-from sklearn.preprocessing import MinMaxScaler
 
-# Stating random seed
+
+import streamlit as st
+
+from sqlalchemy import create_engine
+import psycopg2
+
+# import pickle
+# import os
+# from sklearn.preprocessing import MinMaxScaler
+
+# --- Stating Random Seed
 np.random.seed(42)
 
 def df_creator(dic_):
@@ -122,9 +129,40 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
         
         dic_cat[main_cat]  =  1
 
+
+    def cat_to_db(df_):
+        
+        param_dic = {
+        "user" : "onpsmhcjnzdsiz",
+        "password" : "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+        "host" : "ec2-3-216-92-193.compute-1.amazonaws.com",
+        "port" : "5432", #Postgres Port
+        "database" : "dc1fq03u49u20u"
+        }
+
+        connect = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
+            param_dic['user'],
+            param_dic['password'],
+            param_dic['host'],
+            param_dic['port'],
+            param_dic['database']
+        )
+
+        engine = create_engine(connect)
+
+        df_.to_sql(
+            'category_labels', 
+            con=engine, 
+            index=False, 
+            if_exists='replace'
+        )
+
+    df_cat_dict = pd.DataFrame.from_dict(dic_cat)
+    cat_to_db(df_cat_dict)
+
     df[col].replace(to_replace = dic_cat, inplace = True)
     
-    return df, dic_cat
+    return df
 
 def over_under_sampling(df):
     n_y_num_samples = st.sidebar.selectbox("Manually choose number of samples?", ("No", "Yes"))
@@ -141,16 +179,16 @@ def over_under_sampling(df):
             value=mid_num
         )
         if st.sidebar.button("Re-Train"):
-            for path in ['bernoulli.pickle', 'guassian.pickle', 'knn.pickle', 'log_regr.pickle', 'multi.pickle', 'rfc.pickle']:
-                if os.path.exists(path):
-                    os.remove(path)
+            # for path in ['bernoulli.pickle', 'guassian.pickle', 'knn.pickle', 'log_regr.pickle', 'multi.pickle', 'rfc.pickle']:
+            #     if os.path.exists(path):
+            #         os.remove(path)
             st.caching.clear_cache()
     else:
         num_samples = mid_num
         if st.sidebar.button("Re-Train"):
-            for path in ['bernoulli.pickle', 'guassian.pickle', 'knn.pickle', 'log_regr.pickle', 'multi.pickle', 'rfc.pickle']:
-                if os.path.exists(path):
-                    os.remove(path)
+            # for path in ['bernoulli.pickle', 'guassian.pickle', 'knn.pickle', 'log_regr.pickle', 'multi.pickle', 'rfc.pickle']:
+            #     if os.path.exists(path):
+            #         os.remove(path)
             st.caching.clear_cache()
 
     strategy = dict(Counter(df['category']))
@@ -197,28 +235,97 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
     columns = tfidf.get_feature_names()
     )
 
-    with open ('tfidf.pickle', 'wb') as f:
-        pickle.dump(tfidf,f)
+    param_dic = {
+        "user" : "onpsmhcjnzdsiz",
+        "password" : "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+        "host" : "ec2-3-216-92-193.compute-1.amazonaws.com",
+        "port" : "5432", #Postgres Port
+        "database" : "dc1fq03u49u20u"
+    }
+
+    connect = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
+        param_dic['user'],
+        param_dic['password'],
+        param_dic['host'],
+        param_dic['port'],
+        param_dic['database']
+    )
+
+    engine = create_engine(connect)
+
+    df_vectorizer = pd.DataFrame.from_dict({'used':tfidf})
+
+    df_vectorizer.to_sql(
+        'vectorizer', 
+        con=engine, 
+        index=False, 
+        if_exists='replace'
+    )
 
     df_ = features.merge(df[target_col], left_index=True, right_index= True)
     
     return df_
 
-# def convert_new_post_to_tfidf(df, case_col = 'case', target_col = 'category'):
+def data_to_db(df):
+        
+    param_dic = {
+    "user" : "onpsmhcjnzdsiz",
+    "password" : "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+    "host" : "ec2-3-216-92-193.compute-1.amazonaws.com",
+    "port" : "5432", #Postgres Port
+    "database" : "dc1fq03u49u20u"
+    }
 
-def rescale_numbers(df, scaler = MinMaxScaler):
-    for col in df:
-        if col != 'category':
-            if df[col].dtype in ['int64', 'float64']:
-                numbers = df[col].astype(float).values.reshape(-1, 1)
-                df[col] = scaler().fit_transform(numbers)
+    connect = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
+        param_dic['user'],
+        param_dic['password'],
+        param_dic['host'],
+        param_dic['port'],
+        param_dic['database']
+    )
+    engine = create_engine(connect)
+    df.to_sql(
+        'cfh_data', 
+        con=engine, 
+        index=False, 
+        if_exists='replace'
+    )
+    return df
+
+def from_db(conn_txt_file):
+    conn = psycopg2.connect(
+        user = "onpsmhcjnzdsiz",
+        password = "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+        host = "ec2-3-216-92-193.compute-1.amazonaws.com",
+        port = "5432", #Postgres Port
+        database = "dc1fq03u49u20u"
+    )
+    select_query = """
+        SELECT *
+        FROM cfh_data
+    """
+    cursor = conn.cursor()
+    cursor.execute(select_query)
+
+    tupples = cursor.fetchall()
+    cursor.close()
+    
+    # We just need to turn it into a pandas dataframe
+    df = pd.DataFrame(tupples, columns=['category', 'case'])
+    return df
+
+    # def data_from_csv(path):
+
+# --- Old Functions
+
+#     df = pd.read_csv(path)
+#     return df
+
+# def rescale_numbers(df, scaler = MinMaxScaler):
+#     for col in df:
+#         if col != 'category':
+#             if df[col].dtype in ['int64', 'float64']:
+#                 numbers = df[col].astype(float).values.reshape(-1, 1)
+#                 df[col] = scaler().fit_transform(numbers)
             
-    return df
-
-def data_to_csv(obj_df_dic):
-    obj_df_dic.to_csv("data/data.csv" ) # now variable is a global variable in main.py
-    return obj_df_dic
-
-def data_from_csv(path):
-    df = pd.read_csv(path)
-    return df
+#     return df

@@ -109,128 +109,15 @@ def creation_date(path_to_file):
             # so we'll settle for when its content was last modified.
             return stat.st_mtime
 
-def move_old(folder):
-    os.rename(
-        f"{folder}/{folder}.csv",
-        f"{folder}/previous_{folder}/{folder}_{creation_date(f'{folder}/{folder}.csv')}.csv"
-    )
+# def move_old(folder):
+#     os.rename(
+#         f"{folder}/{folder}.csv",
+#         f"{folder}/previous_{folder}/{folder}_{creation_date(f'{folder}/{folder}.csv')}.csv"
+#     )
 
 def show_df(df):
     st.dataframe(df.style.highlight_max(axis=0))
     return df
-
-def df_to_dict(df_models):
-    
-    process_dict = dict()
-    
-    for model_name in list(df_models['model_name'].values):
-        model = df_models.loc[df_models['model_name'] == model_name, 'best_model'].values[0]
-        model_stat_df = df_models[df_models['model_name'] == model_name][['model_name', 'best_params', 'best_score']]
-        process_dict[model_name] = (model, model_stat_df)
-
-    return process_dict
-
-def save_all_or_one(process_dict):
-
-    model_selection = st.sidebar.selectbox("Choose model to save",tuple(process_dict.keys()))
-
-    if st.sidebar.button("Save"):
-        
-        stat_df = process_dict[model_selection][1]
-        model_chosen = process_dict[model_selection][0]
-
-        stat_df.to_csv(f'saved_models/{model_selection}_stats.csv')
-        with open (f'saved_models/{model_selection}.pickle', 'wb') as f:
-            pickle.dump(model_chosen,f)
-
-def create_db_tables(df_models):
-    # Hey future Sahivy, This is past Sahivy.
-    # This function requires to add a way to create 
-    # the params table based of params used...
-    # This is your job, have fun nerd! 
-    #      ."".   ."",
-    #      |  |  /  /
-    #      |  | /  /
-    #      |  |/  ;-._
-    #      }  ` _/  / ;
-    #      |  /` ) /  /
-    #      | /  /_/\_/\
-    #       (   \ '-  |
-    #       \    `.  /
-    #        |      |   "SUCKS TO SUCK!"
-
-
-    import psycopg2
-    conn = psycopg2.connect(
-        user = "onpsmhcjnzdsiz",
-        password = "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
-        host = "ec2-3-216-92-193.compute-1.amazonaws.com",
-        port = "5432", #Postgres Port
-        database = "dc1fq03u49u20u"
-    )
-
-    cur = conn.cursor()
-
-    sql_params_table = """
-    CREATE TABLE IF NOT EXISTS params (
-        id SERIAL PRIMARY KEY,
-        c REAL,
-        n_neighbors SMALLINT,
-        alpha REAL,
-        ccp_alpha REAL,
-        max_features VARCHAR(100),
-        n_estimators REAL
-    );
-    """
-
-    sql_names_table = """
-    CREATE TABLE IF NOT EXISTS model_names (
-        id SERIAL PRIMARY KEY,
-        model_name VARCHAR(100) UNIQUE NOT NULL
-    );
-    """
-
-    sql_main_table = """
-    CREATE TABLE IF NOT EXISTS scores_models (
-     id SERIAL PRIMARY KEY,
-     model_name_id SMALLINT NOT NULL,
-     best_score SMALLINT NOT NULL,
-     best_model BYTEA NOT NULL,
-     param_id SMALLINT NOT NULL,
-     FOREIGN KEY(param_id) REFERENCES params(id),
-     FOREIGN KEY(model_name_id) REFERENCES model_names(id)
-    );
-    """
-
-    insert_name = """
-    INSERT INTO model_names (model_name) 
-    VALUES (%s)
-    ON CONFLICT (model_name) DO NOTHING;
-    """
-
-    commands = [
-        sql_params_table,
-        sql_names_table,
-        sql_main_table,
-        insert_name
-        ]
-
-    list_names = df_models['model_name'].to_list()
-
-    for i, sql in enumerate(commands):
-        if i != len(commands)-1:
-            cur.execute(sql)
-        else:
-            for name in list_names:
-                cur.execute(sql, (name,))
-
-
-    # close communication with the PostgreSQL database server
-    cur.close()
-    # commit the changes
-    conn.commit()
-
-    return df_models
 
 # STATING CSS
 with open("style.css") as f:
@@ -238,40 +125,39 @@ with open("style.css") as f:
 
 # START SIDE BAR
 graph_instructions()
-# st.sidebar.subheader("Pre-Processing:")
-use_current_data = st.sidebar.selectbox("Re-scrappe website?", ("No", "Yes"))
+st.sidebar.subheader("Pre-Processing:")
+use_current_data = st.sidebar.button("Re-Scrape")
 
 
 # Intro
 streamlit_pipe_write_intro()
 
-if use_current_data == "No":
+if use_current_data == False:
 
-    if os.path.isfile('data/data.csv'):
+    try:
         
         main_pipe(
             final_df_pipe(
                 upload_pipe(
-                    CP.data_from_csv('data/data.csv'),
+                    CP.from_db('db_con.txt'),
+                    streamlit_pipe_write_before,
                     hist_of_target_creator,
                     CP.category_replacer,
-                )[0],
-                streamlit_pipe_write_before,
-                hist_of_target_creator,
+                ),
                 CP.over_under_sampling,
                 streamlit_pipe_write_after,hist_of_target_creator,
                 CP.convert_to_tfidf,
                 RM.best_model,
                 show_df
             ),
-            create_db_tables,
-            df_to_dict,
-            save_all_or_one
+            RM.create_db_tables,
+            # df_to_dict,
+            RM.save_all_or_one
         )
 
-    else:
+    except:
 
-        st.sidebar.write('Although "No" was selected, there was no previous data thus scrapping data from website')
+        st.sidebar.write('There was no data in saved in database, thus scrapping website now!')
 
         main_pipe(
             final_df_pipe(
@@ -283,30 +169,23 @@ if use_current_data == "No":
                     S.initialize_scraping,
                     CP.df_creator,
                     CP.cleaning,
+                    streamlit_pipe_write_before,
                     hist_of_target_creator, 
-                    CP.data_to_csv,
+                    CP.data_to_db,
                     CP.category_replacer
-                    )[0],
-                hist_of_target_creator,
-                streamlit_pipe_write_before,
-                hist_of_target_creator,
+                    ),
                 CP.over_under_sampling,
                 streamlit_pipe_write_after,hist_of_target_creator,
                 CP.convert_to_tfidf,
                 RM.best_model,
                 show_df
             ),
-            create_db_tables,
-            df_to_dict,
-            save_all_or_one
+            RM.create_db_tables,
+            # df_to_dict,
+            RM.save_all_or_one
         )
 
 else:
-
-    try:
-        move_old('data')
-    except: 
-        pass
     
     main_pipe(
         final_df_pipe(
@@ -318,22 +197,20 @@ else:
                     S.initialize_scraping,
                     CP.df_creator,
                     CP.cleaning,
+                    streamlit_pipe_write_before,
                     hist_of_target_creator,
-                    CP.data_to_csv,
+                    CP.data_to_db,
                     CP.category_replacer,
-            )[0],
-            hist_of_target_creator,
-            streamlit_pipe_write_before,
-            hist_of_target_creator,
+            ),
             CP.over_under_sampling,
             streamlit_pipe_write_after,hist_of_target_creator,
             CP.convert_to_tfidf,
             RM.best_model,
             show_df,
         ),
-        create_db_tables,
-        df_to_dict,
-        save_all_or_one
+        RM.create_db_tables,
+        # df_to_dict,
+        RM.save_all_or_one
     )
 
 # --- SECURITY FUNCTION TO LOOK INTO ---
