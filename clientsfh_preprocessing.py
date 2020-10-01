@@ -157,7 +157,7 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
             if_exists='replace'
         )
 
-    df_cat_dict = pd.DataFrame.from_dict(dic_cat)
+    df_cat_dict = pd.DataFrame(dic_cat, index=[0])
     cat_to_db(df_cat_dict)
 
     df[col].replace(to_replace = dic_cat, inplace = True)
