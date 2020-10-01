@@ -253,7 +253,7 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
 
     engine = create_engine(connect)
 
-    df_vectorizer = pd.DataFrame.from_dict({'used':[tfidf]})
+    df_vectorizer = pd.DataFrame.({'used':[tfidf]})
 
     df_vectorizer.to_sql(
         'vectorizer', 
