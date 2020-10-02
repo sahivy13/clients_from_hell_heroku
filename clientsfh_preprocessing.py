@@ -161,7 +161,7 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
     df_cat_dict = pd.DataFrame(dic_cat, index=[0])
     # cat_to_db(df_cat_dict)
 
-    global
+    global global_cat_df
     global_cat_df = df_cat_dict.copy()
 
     df[col].replace(to_replace = dic_cat, inplace = True)
@@ -261,7 +261,7 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
 
     df_vectorizer = pd.DataFrame({'tfidf_pickle':[tfidf_pickle]})
 
-    global
+    global global_df_vectorizer
     global_df_vectorizer = df_vectorizer.copy()
 
     # df_vectorizer.to_sql(
