@@ -10,13 +10,14 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
 
-
 import streamlit as st
 
 from sqlalchemy import create_engine
 import psycopg2
 
-# import pickle
+import pickle
+from sqlalchemy.types import PickleType
+
 # import os
 # from sklearn.preprocessing import MinMaxScaler
 
@@ -253,13 +254,18 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
 
     engine = create_engine(connect)
 
-    df_vectorizer = pd.DataFrame({'used':[tfidf]})
+    tfidf_pickle = pickle.dumps(tfidf)
+
+    df_vectorizer = pd.DataFrame({'tfidf_pickle':[tfidf_pickle]})
+
+    
 
     df_vectorizer.to_sql(
         'vectorizer', 
         con=engine, 
         index=False, 
-        if_exists='replace'
+        if_exists='replace',
+        dtype = {"tfidf_pickle": PickleType()}
     )
 
     df_ = features.merge(df[target_col], left_index=True, right_index= True)
