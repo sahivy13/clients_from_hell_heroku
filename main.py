@@ -233,7 +233,7 @@ def save_all_or_one(df_models):
 
     list_params_name = ['id']
     
-    for ix, dict_ in df_models.items('best_params'):
+    for ix, dict_ in df_models.best_params.iteritems():
         list_params_name.extend(list(dict_.keys()))
 
     df_params_insert = pd.DataFrame(columns=list_params_name)
