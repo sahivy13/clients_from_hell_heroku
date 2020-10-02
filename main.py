@@ -25,8 +25,8 @@ import numpy as np
 from PIL import Image
 
 # --- Global Variables ---
-global_cat_df = np.nan()
-global_df_vectorizer = np.nan()
+# global_cat_df = np.nan()
+# global_df_vectorizer = np.nan()
 
 import nltk
 nltk.download('stopwords')
