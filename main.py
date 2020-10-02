@@ -21,6 +21,10 @@ import pickle
 
 from PIL import Image
 
+# --- Global Variables ---
+global_cat_df = np.nan()
+global_df_vectorizer = np.nan()
+
 import nltk
 nltk.download('stopwords')
 
@@ -33,13 +37,14 @@ def main_pipe(obj, *fns):
 def scrappe_pipe(obj, *fns):
     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def upload_pipe(obj, *fns):
     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def final_df_pipe(obj, *fns):
     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
+
 # def pipe(obj, *fns):
 #     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
 
@@ -96,28 +101,200 @@ def graph_instructions():
     )
     st.sidebar.markdown('***')
 
-def creation_date(path_to_file):
-
-    if platform.system() == 'Windows':
-        return os.path.getctime(path_to_file)
-    else:
-        stat = os.stat(path_to_file)
-        try:
-            return stat.st_birthtime
-        except AttributeError:
-            # We're probably on Linux. No easy way to get creation dates here,
-            # so we'll settle for when its content was last modified.
-            return stat.st_mtime
-
-# def move_old(folder):
-#     os.rename(
-#         f"{folder}/{folder}.csv",
-#         f"{folder}/previous_{folder}/{folder}_{creation_date(f'{folder}/{folder}.csv')}.csv"
-#     )
-
 def show_df(df):
     st.dataframe(df.style.highlight_max(axis=0))
     return df
+
+def create_db_tables(df_models):
+    # Hey future Sahivy, This is past Sahivy.
+    # This function requires to add a way to create 
+    # the params table based of params used...
+    # This is your job, have fun nerd! 
+    #      ."".   ."",
+    #      |  |  /  /
+    #      |  | /  /
+    #      |  |/  ;-._
+    #      }  ` _/  / ;
+    #      |  /` ) /  /
+    #      | /  /_/\_/\
+    #       (   \ '-  |
+    #       \    `.  /
+    #        |      |   "SUCKS TO SUCK!"
+
+
+    conn = psycopg2.connect(
+        user = "onpsmhcjnzdsiz",
+        password = "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+        host = "ec2-3-216-92-193.compute-1.amazonaws.com",
+        port = "5432", #Postgres Port
+        database = "dc1fq03u49u20u"
+    )
+
+    cur = conn.cursor()
+
+    sql_drop_tables = """
+    DROP TABLE IF EXISTS scores_models, params, model_names CASCADE;
+    """    
+
+    sql_names_table = """
+    CREATE TABLE model_names (
+        id SERIAL PRIMARY KEY,
+        model_name VARCHAR(100) UNIQUE NOT NULL
+    );
+    """
+
+    sql_params_table = """
+    CREATE TABLE params (
+        id SERIAL PRIMARY KEY,
+        c REAL,
+        n_neighbors SMALLINT,
+        alpha REAL,
+        ccp_alpha REAL,
+        max_features VARCHAR(100),
+        n_estimators REAL
+    );
+    """
+
+    sql_main_table = """
+    CREATE TABLE scores_models (
+     id SERIAL PRIMARY KEY,
+     model_name_id SMALLINT NOT NULL,
+     best_score SMALLINT NOT NULL,
+     best_model BYTEA NOT NULL,
+     param_id SMALLINT NOT NULL,
+     FOREIGN KEY(param_id) REFERENCES params(id),
+     FOREIGN KEY(model_name_id) REFERENCES model_names(id)
+    );
+    """
+
+    insert_name = """
+    INSERT INTO model_names (model_name) 
+    VALUES (%s)
+    ON CONFLICT (model_name) DO NOTHING;
+    """
+
+    commands = [
+        sql_drop_tables,
+        sql_names_table,
+        sql_params_table,
+        sql_main_table,
+        insert_name
+        ]
+
+    list_names = df_models['model_name'].to_list()
+
+    for i, sql in enumerate(commands):
+        if i != len(commands)-1:
+            cur.execute(sql)
+        elif i == 0:
+            cur.execute(sql)
+        else:
+            for name in list_names:
+                cur.execute(sql, (name,))
+
+
+    # close communication with the PostgreSQL database server
+    cur.close()
+    # commit the changes
+    conn.commit()
+
+    return df_models
+
+def save_all_or_one(df_models):
+
+    conn = psycopg2.connect(
+        user = "onpsmhcjnzdsiz",
+        password = "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+        host = "ec2-3-216-92-193.compute-1.amazonaws.com",
+        port = "5432", #Postgres Port
+        database = "dc1fq03u49u20u"
+    )
+    names_query = """
+        SELECT *
+        FROM model_names
+    """
+    cursor = conn.cursor()
+    cursor.execute(names_query)
+
+    name_tuples = cursor.fetchall()
+    cursor.close()
+    
+    # ADDING PROPER ID TO EACH MODEL
+    df_db_model_names = pd.DataFrame(name_tuples, columns=['id', 'model_name'])
+    df_pre_input = df_models.copy()
+    df_pre_input['id'] = np.nan
+    df_pre_input.loc[df_pre_input.model_name == df_db_model_names.model_name, 'id'] = df_db_model_names.loc[df_db_model_names.model_name == df_pre_input.model_name,'id'].iloc[0]
+
+    model_selection = st.sidebar.multiselect("Choose model to save",tuple(df_pre_input.model_name.values))
+
+    list_params_name = ['id']
+    
+    for ix, dict_ in df_models.items('best_params'):
+        list_params_name.extend(list(dict_.keys()))
+
+    df_params_insert = pd.DataFrame(columns=list_params_name)
+
+    for ix, row in df_pre_input.iterrows():
+        dict_input_p = dict()
+        dict_input_p['id'] = row['id']
+        dict_input_p.update(row['best_params'])
+        df_params_insert.append(dict_input_p, ignore_index = True)
+
+    col_s_m = ['id','model_name_id', 'best_score', 'best_model', 'param_id']
+    df_scores_models_insert = pd.DataFrame(columns=col_s_m)
+
+    for ix, row in df_pre_input.iterrows():
+        dict_input_p = dict()
+        dict_input_p['model_name_id'] = row['id']
+        dict_input_p['param_id'] = row['id']
+        dict_input_p.update(row[['best_score', 'best_model']].to_dict('r')[0])
+        df_scores_models_insert.append(dict_input_p, ignore_index = True)
+    
+
+    if st.sidebar.button("Save"):
+
+        conn = psycopg2.connect(
+            user = "onpsmhcjnzdsiz",
+            password = "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+            host = "ec2-3-216-92-193.compute-1.amazonaws.com",
+            port = "5432", #Postgres Port
+            database = "dc1fq03u49u20u"
+        )
+
+        cur = conn.cursor()
+        # creating column list for insertion
+        cols_params = ",".join([str(i) for i in df_params_insert.columns.tolist()])
+        
+        for i,row in df_params_insert.iterrows():
+            sql = f"INSERT INTO params ({cols_params}) VALUES ({'%s,'*(len(row)-1)}%s);"
+            cur.execute(sql, tuple(row))
+
+        cols_sm = ",".join([str(i) for i in df_scores_models_insert.columns.tolist()])
+
+        for i,row in df_scores_models_insert.iterrows():
+            sql = f"INSERT INTO scores_models ({cols_sm}) VALUES ({'%s,'*(len(row)-1)}%s);"
+            cur.execute(sql, tuple(row))
+
+        cols_cat = "SMALLINT,".join([str(i) for i in global_cat_df.columns.tolist()])+"SMALLINT"
+
+        sql_drop_cat = "DROP TABLE IF EXISTS categories;"
+        cur.execute(sql_drop_cat)
+        sql_create_cat = f"CREATE TABLE IF NOT EXISTS categories ({cols_cat});"
+        cur.execute(sql_create_cat)
+
+        for i,row in global_cat_df.iterrows():
+            sql = f"INSERT INTO categories ({cols_cat}) VALUES({'%s,'*(len(row)-1)}%s);"
+            cur.execute(sql, tuple(row))
+        
+        cols_v = list(global_df_vectorizer.columns)[0]
+
+        for i,row in global_df_vectorizer.iterrows():
+            sql = f"INSERT INTO vectorizer ({cols_v}) VALUES (%s);"
+            cur.execute(sql, tuple(row))
+        
+        cur.close()
+        # commit the changes
+        conn.commit()
 
 # STATING CSS
 with open("style.css") as f:
@@ -150,9 +327,9 @@ if use_current_data == False:
             RM.best_model,
             show_df
         ),
-        RM.create_db_tables,
+        create_db_tables,
         # df_to_dict,
-        RM.save_all_or_one
+        save_all_or_one
     )
 
     # except:
@@ -208,9 +385,9 @@ else:
             RM.best_model,
             show_df,
         ),
-        RM.create_db_tables,
+        create_db_tables,
         # df_to_dict,
-        RM.save_all_or_one
+        save_all_or_one
     )
 
 # --- SECURITY FUNCTION TO LOOK INTO ---

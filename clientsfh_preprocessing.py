@@ -131,35 +131,38 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
         dic_cat[main_cat]  =  1
 
 
-    def cat_to_db(df_):
+    # def cat_to_db(df_):
         
-        param_dic = {
-        "user" : "onpsmhcjnzdsiz",
-        "password" : "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
-        "host" : "ec2-3-216-92-193.compute-1.amazonaws.com",
-        "port" : "5432", #Postgres Port
-        "database" : "dc1fq03u49u20u"
-        }
+    #     param_dic = {
+    #     "user" : "onpsmhcjnzdsiz",
+    #     "password" : "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+    #     "host" : "ec2-3-216-92-193.compute-1.amazonaws.com",
+    #     "port" : "5432", #Postgres Port
+    #     "database" : "dc1fq03u49u20u"
+    #     }
 
-        connect = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
-            param_dic['user'],
-            param_dic['password'],
-            param_dic['host'],
-            param_dic['port'],
-            param_dic['database']
-        )
+    #     connect = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
+    #         param_dic['user'],
+    #         param_dic['password'],
+    #         param_dic['host'],
+    #         param_dic['port'],
+    #         param_dic['database']
+    #     )
 
-        engine = create_engine(connect)
+    #     engine = create_engine(connect)
 
-        df_.to_sql(
-            'category_labels', 
-            con=engine, 
-            index=False, 
-            if_exists='replace'
-        )
+    #     df_.to_sql(
+    #         'category_labels', 
+    #         con=engine, 
+    #         index=False, 
+    #         if_exists='replace'
+    #     )
 
     df_cat_dict = pd.DataFrame(dic_cat, index=[0])
-    cat_to_db(df_cat_dict)
+    # cat_to_db(df_cat_dict)
+
+    global
+    global_cat_df = df_cat_dict.copy()
 
     df[col].replace(to_replace = dic_cat, inplace = True)
     
@@ -236,42 +239,44 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
     columns = tfidf.get_feature_names()
     )
 
-    param_dic = {
-        "user" : "onpsmhcjnzdsiz",
-        "password" : "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
-        "host" : "ec2-3-216-92-193.compute-1.amazonaws.com",
-        "port" : "5432", #Postgres Port
-        "database" : "dc1fq03u49u20u"
-    }
+    # param_dic = {
+    #     "user" : "onpsmhcjnzdsiz",
+    #     "password" : "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
+    #     "host" : "ec2-3-216-92-193.compute-1.amazonaws.com",
+    #     "port" : "5432", #Postgres Port
+    #     "database" : "dc1fq03u49u20u"
+    # }
 
-    connect = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
-        param_dic['user'],
-        param_dic['password'],
-        param_dic['host'],
-        param_dic['port'],
-        param_dic['database']
-    )
+    # connect = "postgresql+psycopg2://%s:%s@%s:%s/%s" % (
+    #     param_dic['user'],
+    #     param_dic['password'],
+    #     param_dic['host'],
+    #     param_dic['port'],
+    #     param_dic['database']
+    # )
 
-    engine = create_engine(connect)
+    # engine = create_engine(connect)
 
     tfidf_pickle = pickle.dumps(tfidf)
 
     df_vectorizer = pd.DataFrame({'tfidf_pickle':[tfidf_pickle]})
 
-    
+    global
+    global_df_vectorizer = df_vectorizer.copy()
 
-    df_vectorizer.to_sql(
-        'vectorizer', 
-        con=engine, 
-        index=False, 
-        if_exists='replace',
-        dtype = {"tfidf_pickle": PickleType()}
-    )
+    # df_vectorizer.to_sql(
+    #     'vectorizer', 
+    #     con=engine, 
+    #     index=False, 
+    #     if_exists='replace',
+    #     dtype = {"tfidf_pickle": PickleType()}
+    # )
 
     df_ = features.merge(df[target_col], left_index=True, right_index= True)
     
     return df_
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def data_to_db(df):
         
     param_dic = {
@@ -298,6 +303,7 @@ def data_to_db(df):
     )
     return df
 
+@st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def from_db(conn_txt_file):
     conn = psycopg2.connect(
         user = "onpsmhcjnzdsiz",

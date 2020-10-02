@@ -352,7 +352,7 @@ def save_all_or_one(df_models):
         cols_sm = ",".join([str(i) for i in df_scores_models_insert.columns.tolist()])
 
         for i,row in df_scores_models_insert.iterrows():
-            sql = f"INSERT INTO params ({cols_sm}) VALUES ({'%s,'*(len(row)-1)}%s);"
+            sql = f"INSERT INTO scores_models ({cols_sm}) VALUES ({'%s,'*(len(row)-1)}%s);"
             cur.execute(sql, tuple(row))
 
         cur.close()
