@@ -34,19 +34,19 @@ nltk.download('stopwords')
 
 # Streamlit Cache
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def main_pipe(obj, *fns):
     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def scrappe_pipe(obj, *fns):
     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def upload_pipe(obj, *fns):
     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def final_df_pipe(obj, *fns):
     return functools.reduce(lambda x, y: y(x), [obj] + list(fns))
 
