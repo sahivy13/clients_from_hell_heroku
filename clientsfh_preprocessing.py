@@ -263,7 +263,7 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
     
     return df_
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def data_to_db(df):
         
     param_dic = {
@@ -290,7 +290,7 @@ def data_to_db(df):
     )
     return df
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+# @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def from_db(conn_txt_file):
     conn = psycopg2.connect(
         user = "onpsmhcjnzdsiz",
