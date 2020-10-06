@@ -204,8 +204,7 @@ def create_db_tables(df_models):
 
     return df_models
 
-def save_all_or_one(df_models):
-
+def pre_saving_crunch(df_models):
     conn = psycopg2.connect(
         user = "onpsmhcjnzdsiz",
         password = "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
@@ -228,9 +227,6 @@ def save_all_or_one(df_models):
     df_pre_input = df_models.copy()
     df_pre_input['id'] = np.nan
     df_pre_input.loc[df_pre_input.model_name == df_db_model_names.model_name, 'id'] = df_db_model_names.loc[df_db_model_names.model_name == df_pre_input.model_name,'id'].iloc[0]
-
-    # SIDEBAR SELECTION OF MODELS TO SAVE
-    model_selection = st.sidebar.multiselect("Choose model to save",tuple(df_pre_input.model_name.values))
 
     # PARAMS TABLE DF
     list_params_name = ['id']
@@ -257,8 +253,9 @@ def save_all_or_one(df_models):
         dict_input_p.update(row[['best_score', 'best_model']].to_dict())
         df_scores_models_insert.append(dict_input_p, ignore_index = True)
     
+    return df_pre_input, df_params_insert, df_scores_models_insert
 
-    if st.sidebar.button("Save"):
+def save_all_or_one(df_params_insert, df_scores_models_insert):
 
         conn = psycopg2.connect(
             user = "onpsmhcjnzdsiz",
@@ -328,7 +325,7 @@ if use_current_data == False:
 
     # try:
         
-    main_pipe(
+    df_pre_input, df_params_insert, df_scores_models_insert = main_pipe(
         final_df_pipe(
             upload_pipe(
                 CP.from_db('db_con.txt'),
@@ -342,9 +339,9 @@ if use_current_data == False:
             RM.best_model,
             show_df
         ),
-        create_db_tables,
+        create_db_tables
         # df_to_dict,
-        save_all_or_one
+        # save_all_or_one
     )
 
     # except:
@@ -379,7 +376,7 @@ if use_current_data == False:
 
 else:
     
-    main_pipe(
+    df_pre_input, df_params_insert, df_scores_models_insert = main_pipe(
         final_df_pipe(
             scrappe_pipe(
                     "https://clientsfromhell.net/",
@@ -400,10 +397,17 @@ else:
             RM.best_model,
             show_df,
         ),
-        create_db_tables,
+        create_db_tables
         # df_to_dict,
-        save_all_or_one
+        # save_all_or_one
     )
+
+# SIDEBAR SELECTION OF MODELS TO SAVE
+model_selection = st.sidebar.multiselect("Choose model to save",tuple(df_pre_input.model_name.values))
+
+
+if st.sidebar.button("Save"):
+    save_all_or_one(df_params_insert, df_scores_models_insert)
 
 # --- SECURITY FUNCTION TO LOOK INTO ---
 # if not state.user:
