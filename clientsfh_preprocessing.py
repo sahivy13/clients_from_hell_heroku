@@ -111,8 +111,19 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
 
     if mul == True: #--- MULTILABEL ---
         dic_cat = {}
+        list_cat = []
+        list_id = []
         for i, cat in enumerate(list(df[col].unique())):
+            list_id.append(i)
+            list_cat.append(cat)
             dic_cat[cat] = i
+
+        
+        dic_to_df = {
+            'category' : list_cat,
+            'id' : list_id
+        }
+
 
     else: #--- CATEGORY VS. NOT CATEGORY ---
         dic_cat = {
@@ -158,7 +169,7 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
     #         if_exists='replace'
     #     )
 
-    df_cat_dict = pd.DataFrame(dic_cat, index=[0])
+    df_cat_dict = pd.DataFrame(dic_to_df, index=[0])
     # cat_to_db(df_cat_dict)
 
     global global_cat_df
@@ -265,7 +276,7 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
     global_df_vectorizer = df_vectorizer.copy()
 
     # df_vectorizer.to_sql(
-    #     'vectorizer', 
+    #     'vectorizerf', 
     #     con=engine, 
     #     index=False, 
     #     if_exists='replace',

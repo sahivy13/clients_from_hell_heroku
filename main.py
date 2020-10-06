@@ -26,8 +26,8 @@ import psycopg2
 from PIL import Image
 
 # --- Global Variables ---
-# global_cat_df = np.nan()
-# global_df_vectorizer = np.nan()
+# global_cat_df
+# global_df_vectorizer
 
 import nltk
 nltk.download('stopwords')
@@ -223,14 +223,16 @@ def save_all_or_one(df_models):
     name_tuples = cursor.fetchall()
     cursor.close()
     
-    # ADDING PROPER ID TO EACH MODEL
+    # --- ADDING PROPER ID TO EACH MODEL IN THE COPY OF ORIGINAL DF FOR INPUT TO DB---
     df_db_model_names = pd.DataFrame(name_tuples, columns=['id', 'model_name'])
     df_pre_input = df_models.copy()
     df_pre_input['id'] = np.nan
     df_pre_input.loc[df_pre_input.model_name == df_db_model_names.model_name, 'id'] = df_db_model_names.loc[df_db_model_names.model_name == df_pre_input.model_name,'id'].iloc[0]
 
+    # SIDEBAR SELECTION OF MODELS TO SAVE
     model_selection = st.sidebar.multiselect("Choose model to save",tuple(df_pre_input.model_name.values))
 
+    # PARAMS TABLE DF
     list_params_name = ['id']
     
     for ix, dict_ in df_models.best_params.iteritems():
@@ -240,18 +242,19 @@ def save_all_or_one(df_models):
 
     for ix, row in df_pre_input.iterrows():
         dict_input_p = dict()
-        dict_input_p['id'] = row['id']
+        dict_input_p['id'] = int(row['id'])
         dict_input_p.update(row['best_params'])
         df_params_insert.append(dict_input_p, ignore_index = True)
 
+    # MAIN TABLE DF
     col_s_m = ['id','model_name_id', 'best_score', 'best_model', 'param_id']
     df_scores_models_insert = pd.DataFrame(columns=col_s_m)
 
     for ix, row in df_pre_input.iterrows():
         dict_input_p = dict()
-        dict_input_p['model_name_id'] = row['id']
-        dict_input_p['param_id'] = row['id']
-        dict_input_p.update(row[['best_score', 'best_model']].to_dict('r')[0])
+        dict_input_p['model_name_id'] = int(row['id'])
+        dict_input_p['param_id'] = int(row['id'])
+        dict_input_p.update(row[['best_score', 'best_model']].to_dict())
         df_scores_models_insert.append(dict_input_p, ignore_index = True)
     
 
