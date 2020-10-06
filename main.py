@@ -339,7 +339,8 @@ if use_current_data == False:
             RM.best_model,
             show_df
         ),
-        create_db_tables
+        create_db_tables,
+        pre_saving_crunch
         # df_to_dict,
         # save_all_or_one
     )
@@ -397,7 +398,8 @@ else:
             RM.best_model,
             show_df,
         ),
-        create_db_tables
+        create_db_tables,
+        pre_saving_crunch
         # df_to_dict,
         # save_all_or_one
     )
