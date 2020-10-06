@@ -305,6 +305,7 @@ def save_all_or_one(df_params_insert, df_scores_models_insert):
             sql = f"INSERT INTO vectorizer ({cols_v_sql}) VALUES ({'%s,'*(len(row)-1)}%s);"
             cur.execute(sql, tuple(row))
         
+        
         cur.close()
         # commit the changes
         conn.commit()
