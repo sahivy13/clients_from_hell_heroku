@@ -281,8 +281,9 @@ def save_all_or_one(df_models):
         for i,row in df_scores_models_insert.iterrows():
             sql = f"INSERT INTO scores_models ({cols_sm}) VALUES ({'%s,'*(len(row)-1)}%s);"
             cur.execute(sql, tuple(row))
-
-        cols_cat = "SMALLINT,".join([str(i) for i in global_cat_df.columns.tolist()])+"SMALLINT"
+        
+        cols_cat_sql = ", ".join([str(i) for i in global_cat_df.columns.tolist()])
+        cols_cat_table_sql = " SMALLINT PRIMARY KEY, ".join([str(i) for i in global_cat_df.columns.tolist()])+" VARCHAR(100) UNIQUE"
 
         sql_drop_cat = "DROP TABLE IF EXISTS categories;"
         cur.execute(sql_drop_cat)
@@ -290,13 +291,20 @@ def save_all_or_one(df_models):
         cur.execute(sql_create_cat)
 
         for i,row in global_cat_df.iterrows():
-            sql = f"INSERT INTO categories ({cols_cat}) VALUES({'%s,'*(len(row)-1)}%s);"
+            sql = f"INSERT INTO categories ({cols_cat_sql}) VALUES({'%s,'*(len(row)-1)}%s);"
             cur.execute(sql, tuple(row))
         
-        cols_v = list(global_df_vectorizer.columns)[0]
+
+        cols_v_sql = ", ".join([str(i) for i in global_cat_df.columns.tolist()])
+        cols_v_table_sql = " VARCHAR(100) PRIMARY KEY, ".join([str(i) for i in global_cat_df.columns.tolist()])+" VARCHAR(100) UNIQUE"
+
+        sql_drop_v = "DROP TABLE IF EXISTS vectorizer;"
+        cur.execute(sql_drop_cat)
+        sql_create_v = f"CREATE TABLE IF NOT EXISTS vectorizer ({cols_v_table_sql});"
+        cur.execute(sql_create_cat)
 
         for i,row in global_df_vectorizer.iterrows():
-            sql = f"INSERT INTO vectorizer ({cols_v}) VALUES (%s);"
+            sql = f"INSERT INTO vectorizer ({cols_v_sql}) VALUES ({'%s,'*(len(row)-1)}%s);"
             cur.execute(sql, tuple(row))
         
         cur.close()
