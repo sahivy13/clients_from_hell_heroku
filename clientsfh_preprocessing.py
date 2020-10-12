@@ -119,10 +119,10 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
             dic_cat[cat] = i
 
         
-        dic_to_df = {
-            'category' : list_cat,
-            'id' : list_id
-        }
+        # dic_to_df = {
+        #     'category' : list_cat,
+        #     'id' : list_id
+        # }
 
 
     else: #--- CATEGORY VS. NOT CATEGORY ---
