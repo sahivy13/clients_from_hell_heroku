@@ -110,6 +110,9 @@ def show_df(df):
     st.dataframe(df.style.highlight_max(axis=0))
     return df
 
+def show_df_h(df):
+    st.dataframe(df.style.highlight_max(axis=0))
+
 def create_db_tables(df_models):
     # Hey future Sahivy, This is past Sahivy.
     # This function requires to add a way to create 
@@ -337,27 +340,42 @@ streamlit_pipe_write_intro()
 
 if use_current_data == False:
 
+    final_df_pipe(
+        upload_pipe(
+            CP.from_db('db_con.txt'),
+            streamlit_pipe_write_before,
+            hist_of_target_creator,
+            CP.category_replacer,
+        ),
+        CP.over_under_sampling,
+        streamlit_pipe_write_after,hist_of_target_creator,
+        CP.convert_to_tfidf_h, #Modified for Heroku
+        RM.best_model,
+        show_df_h # Modified for Heroku
+    )
+
+
     # try:
         
-    df_pre_input, df_params_insert, df_scores_models_insert = main_pipe(
-        final_df_pipe(
-            upload_pipe(
-                CP.from_db('db_con.txt'),
-                streamlit_pipe_write_before,
-                hist_of_target_creator,
-                CP.category_replacer,
-            ),
-            CP.over_under_sampling,
-            streamlit_pipe_write_after,hist_of_target_creator,
-            CP.convert_to_tfidf_h, #Modified for Heroku
-            RM.best_model,
-            show_df
-        ),
-        create_db_tables,
-        pre_saving_crunch
-        # df_to_dict,
-        # save_all_or_one
-    )
+    # df_pre_input, df_params_insert, df_scores_models_insert = main_pipe(
+    #     final_df_pipe(
+    #         upload_pipe(
+    #             CP.from_db('db_con.txt'),
+    #             streamlit_pipe_write_before,
+    #             hist_of_target_creator,
+    #             CP.category_replacer,
+    #         ),
+    #         CP.over_under_sampling,
+    #         streamlit_pipe_write_after,hist_of_target_creator,
+    #         CP.convert_to_tfidf_h, #Modified for Heroku
+    #         RM.best_model,
+    #         show_df
+    #     ),
+    #     create_db_tables,
+    #     pre_saving_crunch
+    #     # df_to_dict,
+    #     # save_all_or_one
+    # )
 
     # except:
 
@@ -391,32 +409,54 @@ if use_current_data == False:
 
 else:
     
-    df_pre_input, df_params_insert, df_scores_models_insert = main_pipe(
-        final_df_pipe(
-            scrappe_pipe(
-                    "https://clientsfromhell.net/",
-                    S.get_categories,
-                    S.url_categroy_creator,
-                    S.page_num_creator,
-                    S.initialize_scraping,
-                    CP.df_creator,
-                    CP.cleaning,
-                    streamlit_pipe_write_before,
-                    hist_of_target_creator,
-                    CP.data_to_db,
-                    CP.category_replacer,
-            ),
-            CP.over_under_sampling,
-            streamlit_pipe_write_after,hist_of_target_creator,
-            CP.convert_to_tfidf_h, #Modefied for Heroku
-            RM.best_model,
-            show_df,
+    final_df_pipe(
+        scrappe_pipe(
+            "https://clientsfromhell.net/",
+            S.get_categories,
+            S.url_categroy_creator,
+            S.page_num_creator,
+            S.initialize_scraping,
+            CP.df_creator,
+            CP.cleaning,
+            streamlit_pipe_write_before,
+            hist_of_target_creator,
+            CP.data_to_db,
+            CP.category_replacer,
         ),
+        CP.over_under_sampling,
+        streamlit_pipe_write_after,hist_of_target_creator,
+        CP.convert_to_tfidf_h, #Modefied for Heroku
+        RM.best_model,
+        show_df_h, # Modified for Heroku
+    )
+
+
+    # df_pre_input, df_params_insert, df_scores_models_insert = main_pipe(
+    #     final_df_pipe(
+    #         scrappe_pipe(
+    #                 "https://clientsfromhell.net/",
+    #                 S.get_categories,
+    #                 S.url_categroy_creator,
+    #                 S.page_num_creator,
+    #                 S.initialize_scraping,
+    #                 CP.df_creator,
+    #                 CP.cleaning,
+    #                 streamlit_pipe_write_before,
+    #                 hist_of_target_creator,
+    #                 CP.data_to_db,
+    #                 CP.category_replacer,
+    #         ),
+    #         CP.over_under_sampling,
+    #         streamlit_pipe_write_after,hist_of_target_creator,
+    #         CP.convert_to_tfidf_h, #Modefied for Heroku
+    #         RM.best_model,
+    #         show_df,
+    #     ),
         # create_db_tables,
         # pre_saving_crunch
         # df_to_dict,
         # save_all_or_one
-    )
+    # )
 
 # # SIDEBAR SELECTION OF MODELS TO SAVE
 # model_selection = st.sidebar.multiselect("Choose model to save",tuple(df_pre_input.model_name.values))
