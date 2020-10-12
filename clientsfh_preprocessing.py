@@ -271,6 +271,18 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
     
     return df_
 
+def convert_to_tfidf_h(df, case_col = 'case', target_col = 'category'):
+    tfidf = TfidfVectorizer()
+    word_count_vectors = tfidf.fit_transform(df[case_col].values).todense().tolist()
+
+    features = pd.DataFrame(
+    data = word_count_vectors,
+    columns = tfidf.get_feature_names()
+    )
+
+    df_ = features.merge(df[target_col], left_index=True, right_index= True)
+    
+    return df_
 # @st.cache(suppress_st_warning=True, allow_output_mutation=True)
 def data_to_db(df):
         

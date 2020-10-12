@@ -349,7 +349,7 @@ if use_current_data == False:
             ),
             CP.over_under_sampling,
             streamlit_pipe_write_after,hist_of_target_creator,
-            CP.convert_to_tfidf,
+            CP.convert_to_tfidf_h, #Modified for Heroku
             RM.best_model,
             show_df
         ),
@@ -408,7 +408,7 @@ else:
             ),
             CP.over_under_sampling,
             streamlit_pipe_write_after,hist_of_target_creator,
-            CP.convert_to_tfidf,
+            CP.convert_to_tfidf_h, #Modefied for Heroku
             RM.best_model,
             show_df,
         ),
