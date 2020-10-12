@@ -26,8 +26,8 @@ import psycopg2
 from PIL import Image
 
 # --- Global Variables ---
-# global_cat_df
-# global_df_vectorizer
+# global_cat_df = CP.global_cat_df
+# global_df_vectorizer = CP.global_df_vectorizer
 
 import nltk
 nltk.download('stopwords')
@@ -258,6 +258,9 @@ def pre_saving_crunch(df_models):
 
 def save_all_or_one(df_params_insert, df_scores_models_insert):
 
+        global_cat_df = pd.read_csv('global_cat_df.csv')
+        # global_df_vectorizer = pd.read_csv('global_df_vectorizer.csv')
+
         conn = psycopg2.connect(
             user = "onpsmhcjnzdsiz",
             password = "54cad954a541572fa5b79d1cd9448b4c2971306246824c1f9468c853ef6471b0",
@@ -285,27 +288,36 @@ def save_all_or_one(df_params_insert, df_scores_models_insert):
 
         sql_drop_cat = "DROP TABLE IF EXISTS categories;"
         cur.execute(sql_drop_cat)
-        sql_create_cat = f"CREATE TABLE IF NOT EXISTS categories ({cols_cat});"
+        sql_create_cat = f"CREATE TABLE IF NOT EXISTS categories ({cols_cat_table_sql});"
         cur.execute(sql_create_cat)
 
         for i,row in global_cat_df.iterrows():
             sql = f"INSERT INTO categories ({cols_cat_sql}) VALUES({'%s,'*(len(row)-1)}%s);"
             cur.execute(sql, tuple(row))
         
+        with open('tfidf', 'rb') as f:
+            load = pickle.load(f)
+            f.close()
 
-        cols_v_sql = ", ".join([str(i) for i in global_cat_df.columns.tolist()])
-        cols_v_table_sql = " VARCHAR(100) PRIMARY KEY, ".join([str(i) for i in global_cat_df.columns.tolist()])+" VARCHAR(100) UNIQUE"
+        tfidf_pickle = pickle.dumps(load)
+
+        df_vectorizer = pd.DataFrame({'tfidf':[tfidf_pickle]}, index = ['pickle_object']).T
+        df_vectorizer.index = df_vectorizer.index.set_names(['vec_name'])
+        df_vectorizer.reset_index(inplace = True)
+
+        cols_v_sql = ", ".join([str(i) for i in df_vectorizer.columns.tolist()])
+        cols_v_table_sql = " VARCHAR(100) PRIMARY KEY, ".join([str(i) for i in df_vectorizer.columns.tolist()])+" BYTEA"
 
         sql_drop_v = "DROP TABLE IF EXISTS vectorizer;"
-        cur.execute(sql_drop_cat)
+        cur.execute(sql_drop_v)
         sql_create_v = f"CREATE TABLE IF NOT EXISTS vectorizer ({cols_v_table_sql});"
-        cur.execute(sql_create_cat)
+        cur.execute(sql_create_v)
 
-        for i,row in global_df_vectorizer.iterrows():
+        for i,row in df_vectorizer.iterrows():
             sql = f"INSERT INTO vectorizer ({cols_v_sql}) VALUES ({'%s,'*(len(row)-1)}%s);"
             cur.execute(sql, tuple(row))
         
-        
+
         cur.close()
         # commit the changes
         conn.commit()
@@ -406,12 +418,12 @@ else:
         # save_all_or_one
     )
 
-# SIDEBAR SELECTION OF MODELS TO SAVE
-model_selection = st.sidebar.multiselect("Choose model to save",tuple(df_pre_input.model_name.values))
+# # SIDEBAR SELECTION OF MODELS TO SAVE
+# model_selection = st.sidebar.multiselect("Choose model to save",tuple(df_pre_input.model_name.values))
 
 
-if st.sidebar.button("Save"):
-    save_all_or_one(df_params_insert, df_scores_models_insert)
+# if st.sidebar.button("Save"):
+save_all_or_one(df_params_insert, df_scores_models_insert)
 
 # --- SECURITY FUNCTION TO LOOK INTO ---
 # if not state.user:

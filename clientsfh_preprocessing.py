@@ -18,7 +18,7 @@ import psycopg2
 import pickle
 from sqlalchemy.types import PickleType
 
-# import os
+import os
 # from sklearn.preprocessing import MinMaxScaler
 
 # --- Stating Random Seed
@@ -146,8 +146,9 @@ def category_replacer(df, col = 'category', mul = True, main_cat = "Deadbeats"):
     df_cat_dict.index = df_cat_dict.index.set_names(['category'])
     df_cat_dict.reset_index(inplace = True)
 
-    global global_cat_df
+    # global global_cat_df
     global_cat_df = df_cat_dict[['id','category']].copy()
+    global_cat_df.to_csv('global_cat_df.csv', index = False)
 
     df[col].replace(to_replace = dic_cat, inplace = True)
     
@@ -219,6 +220,10 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
     tfidf = TfidfVectorizer()
     word_count_vectors = tfidf.fit_transform(df[case_col].values).todense().tolist()
     
+    with open('tfidf', 'wb') as f:
+        pickle.dump(object, f)
+        f.close()
+
     features = pd.DataFrame(
     data = word_count_vectors,
     columns = tfidf.get_feature_names()
@@ -242,14 +247,17 @@ def convert_to_tfidf(df, case_col = 'case', target_col = 'category'):
 
     # engine = create_engine(connect)
 
-    tfidf_pickle = pickle.dumps(tfidf)
 
-    df_vectorizer = pd.DataFrame({'tfidf':[tfidf_pickle]}, index = ['pickle_object']).T
-    df_vectorizer.index = df_vectorizer.index.set_names(['vectorizer'])
-    df_vectorizer.reset_index(inplace = True)
 
-    global global_df_vectorizer
-    global_df_vectorizer = df_vectorizer.copy()
+    # tfidf_pickle = pickle.dumps(tfidf)
+
+    # df_vectorizer = pd.DataFrame({'tfidf':[tfidf_pickle]}, index = ['pickle_object']).T
+    # df_vectorizer.index = df_vectorizer.index.set_names(['type'])
+    # df_vectorizer.reset_index(inplace = True)
+
+    # global global_df_vectorizer
+    # global_df_vectorizer = df_vectorizer.copy()
+    # global_df_vectorizer.to_csv('global_df_vectorizer.csv', index = False)
 
     # df_vectorizer.to_sql(
     #     'vectorizerf', 
