@@ -102,42 +102,32 @@ This Project was created by me (Sahivy R. Gonzalez) in order to showcase some of
 
 Each post made on the website is a story from freelancers. These stories are of bad experiences the freelancers had with clients ***in real life...*** and each story is classified as the following:
 - Chaotic Good
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-chaotic-good.svg" alt="drawing" width="25"/>
 <br>
 - Dounces
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-dunces.svg" alt="drawing" width="25"/>
 <br>
 - Cryptic
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-cryptic.svg" alt="drawing" width="25"/>
 <br>
 - Homophobes
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-homophobes.svg" alt="drawing" width="25"/>
 <br>
 - Sexist
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-sexist.svg" alt="drawing" width="25"/>
 <br>
 - Criminals
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-criminal.svg" alt="drawing" width="25"/>
 <br>
 - Deadbeats
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-deadbeats.svg" alt="drawing" width="25"/>
 <br>
 - Racists
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-homophobes.svg" alt="drawing" width="25"/>
 <br>
 - Ingrates
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-ingrates.svg" alt="drawing" width="25"/>
 <br>
 - Frenemies
-<br>
 <img src="https://clientsfromhell.net/wp-content/uploads/2018/09/ic-frenemies.svg" alt="drawing" width="25"/>
 <br>
