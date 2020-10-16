@@ -76,13 +76,9 @@ def streamlit_pipe_write_intro():
     path_cfh_logo = "cfh_logo.png"
     cfh_logo = Image.open(path_cfh_logo)
     
-
-    # st.markdown("<img src='https://raw.githubusercontent.com/sahivy13/clients_from_hell/master/cfh_logo.png' alt='cfh_logo' class='center' />")
-
-    # st.markdown("[![cfh_logo_link](https://raw.githubusercontent.com/sahivy13/clients_from_hell/master/cfh_logo.png)](https://clientsfromhell.net/)")
     st.image(web_logo, width = 85)
-    st.markdown("<h1 style='text-align: center; color: black;'>Supervised Machine Learning</h1>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center; color: black;'>Classifier Algorithm Trainer Bot </h2>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: black;'>Classifier Algorithm Trainer Bot</h1>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: black;'>Supervised Machine Learning</h2>", unsafe_allow_html=True)
     st.image(cfh_logo, width = 300)
     st.markdown("<h4 style='text-align: center; color: black;'>Sourced from:  <a class='website-link' href='https://clientsfromhell.net/'>Clients From Hell</a></h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; color: black;'>Created by: <a class='website-link' href='https://sahivy.com/'>Sahivy R. Gonzalez</a></h1>", unsafe_allow_html=True)
